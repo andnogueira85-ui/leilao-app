@@ -1,5 +1,7 @@
 import numpy as np
 import numpy_financial as npf
+import requests
+from bs4 import BeautifulSoup
 
 def calcular_indicadores(dados):
     # Premissas de Alavancagem (Foco Caixa/Itaú)
@@ -44,6 +46,18 @@ def calcular_indicadores(dados):
         "status": "VIÁVEL" if roi_percentual > 15 else "RISCO_ALTO"
     }
 
+def extrair_dados_link(url):
+    try:
+        response = requests.get(url, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        titulo = soup.title.string if soup.title else "Título não encontrado"
+        # Placeholder: ajustar seletores para o site específico (ex: Zuk Leilões)
+        # Exemplo: detalhes = soup.find('div', class_='property-details').text
+        detalhes = "Implementar parsing específico para extrair: tipo, quartos, banheiros, vaga, localização."
+        return {"titulo": titulo, "detalhes": detalhes}
+    except Exception as e:
+        return {"titulo": "Erro ao acessar o link", "detalhes": str(e)}
+
 import streamlit as st
 
 st.set_page_config(page_title="AuctionDev Partner", layout="wide")
@@ -53,6 +67,13 @@ st.sidebar.markdown("---")
 
 # Input de Dados
 url_imovel = st.sidebar.text_input("Link do Leilão (URL)")
+if st.sidebar.button("Extrair Dados do Link"):
+    if url_imovel:
+        dados_extraidos = extrair_dados_link(url_imovel)
+        st.sidebar.write("**Título:**", dados_extraidos["titulo"])
+        st.sidebar.write("**Detalhes:**", dados_extraidos["detalhes"])
+    else:
+        st.sidebar.warning("Insira um link válido.")
 val_arremate = st.sidebar.number_input("Valor de Arremate (R$)", max_value=200000, value=80000)
 val_venda = st.sidebar.number_input("VGV Estimado (R$)", value=150000)
 
@@ -101,6 +122,6 @@ else:
     
     with col_b:
         st.write("**Custos de Prefeitura e RGI**")
-        itbi_estimado = val_arremate * 0.03
-        st.write(f"ITBI Est. (3%): R$ {itbi_estimado:,.2f}")
+        itbi_estimado = val_arremate * 0.02
+        st.write(f"ITBI Est. (2%): R$ {itbi_estimado:,.2f}")
         st.write(f"Escritura/Registro Est.: R$ 2.500,00")
