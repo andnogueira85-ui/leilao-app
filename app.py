@@ -37,8 +37,8 @@ def calcular_indicadores(dados):
         "capital_necessario": capital_proprio,
         "status": "VIÁVEL" if roi_percentual > 15 else "RISCO_ALTO"
     }
-    import streamlit as st
-from modules.finance import calcular_indicadores
+
+import streamlit as st
 
 st.set_page_config(page_title="AuctionDev Partner", layout="wide")
 
@@ -96,4 +96,4 @@ else:
         st.write("**Custos de Prefeitura e RGI**")
         itbi_estimado = val_arremate * 0.03
         st.write(f"ITBI Est. (3%): R$ {itbi_estimado:,.2f}")
-        st.write(f"Escritura/Registro Est.: R$ 2.500,00")   
+        st.write(f"Escritura/Registro Est.: R$ 2.500,00")
