@@ -21,11 +21,16 @@ def calcular_indicadores(dados):
     # Venda Líquida (Descontando 6% de corretagem)
     venda_liquida = dados['valor_venda_estimado'] * 0.94
     
-    # O Lucro Real considera a quitação do financiamento (simplificado)
+    # Lucro Real
     lucro_final = venda_liquida - financiamento - capital_proprio
     
     # ROI (Cash-on-Cash)
-    roi_percentual = (lucro_final / capital_proprio) * 100
+    roi_percentual = (lucro_final / capital_proprio) * 100 if capital_proprio > 0 else 0
+    
+    # TIR (Taxa Interna de Retorno)
+    # Fluxo de caixa: -capital_proprio no início, + (venda_liquida - financiamento) no final
+    cash_flows = [-capital_proprio, venda_liquida - financiamento]
+    tir_percentual = npf.irr(cash_flows) * 100 if len(cash_flows) > 1 and capital_proprio > 0 else 0
     
     # Payback (Meses para retornar o capital investido)
     payback = prazo_total if lucro_final > 0 else float('inf')
@@ -33,6 +38,7 @@ def calcular_indicadores(dados):
     return {
         "lucro_real": lucro_final,
         "roi_coc": roi_percentual,
+        "tir_percentual": tir_percentual,
         "payback_meses": payback,
         "capital_necessario": capital_proprio,
         "status": "VIÁVEL" if roi_percentual > 15 else "RISCO_ALTO"
@@ -73,11 +79,12 @@ else:
     res = calcular_indicadores(dados_input)
     
     # UI de Indicadores
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     col1.metric("Lucro Líquido", f"R$ {res['lucro_real']:,.2f}")
     col2.metric("ROI (Cash-on-Cash)", f"{res['roi_coc']:.1f}%")
-    col3.metric("Tempo Ciclo", f"{res['payback_meses']} Meses")
-    col4.metric("Desembolso Inicial", f"R$ {res['capital_necessario']:,.2f}")
+    col3.metric("TIR", f"{res['tir_percentual']:.1f}%")
+    col4.metric("Tempo Ciclo", f"{res['payback_meses']} Meses")
+    col5.metric("Desembolso Inicial", f"R$ {res['capital_necessario']:,.2f}")
     
     st.markdown("---")
     
